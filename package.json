@@ -1,0 +1,26 @@
+{
+  "name": "guessit",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "create-react-ap": "^1.0.1",
+    "create-react-app": "^4.0.0",
+    "front": "0.0.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JohnyBro/guessit.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JohnyBro/guessit/issues"
+  },
+  "homepage": "https://github.com/JohnyBro/guessit#readme"
+}
