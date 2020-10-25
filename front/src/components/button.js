@@ -10,6 +10,7 @@ const Btn = styled.div`
 
     padding: 10px;
     border: 3px ${colors.secondary[1]} solid;
+    border-radius: 5px;
 
     &:hover {
         background-color: ${colors.secondary[2]};
@@ -19,7 +20,7 @@ Btn.displayName = "Btn.div"
 
 function Button(props){
     return (
-        <Btn>
+        <Btn className={props.className}>
             {props.children}
         </Btn>
     )
