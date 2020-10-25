@@ -25,6 +25,54 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>React App</title>
+    <style>
+      @font-face {
+        font-family: redHatDisplay;
+        src: url("./fonts/RedHatDisplay-Regular.ttf");
+      }
+      @font-face {
+        font-family: redHatDisplay;
+        src: url("./fonts/RedHatDisplay-Bold.ttf");
+        font-weight: bold;
+      }
+      @font-face {
+        font-family: redHatDisplay;
+        src: url("./fonts/RedHatDisplay-Italic.ttf");
+        font-style: italic;
+      }
+      @font-face {
+        font-family: redHatDisplay;
+        src: url("./fonts/RedHatDisplay-BoldItalic.ttf");
+        font-style: italic;
+        font-weight: bold;
+      }
+      @font-face {
+        font-family: redHatDisplay;
+        src: url("./fonts/RedHatDisplay-Medium.ttf");
+        font-weight: 500;
+      }
+      @font-face {
+        font-family: redHatDisplay;
+        src: url("./fonts/RedHatDisplay-MediumItalic.ttf");
+        font-style: italic;
+        font-weight: 500;
+      }
+
+      * {
+        box-sizing: border-box;
+        padding: 0;
+        margin: 0;
+      }
+      body {
+        height: 100vh;
+        width: 100vw;
+        font-family: redHatDisplay;
+      }
+      #root {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
