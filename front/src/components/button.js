@@ -18,9 +18,9 @@ const Btn = styled.div`
 `
 Btn.displayName = "Btn.div"
 
-function Button(props){
+function Button(props) {
     return (
-        <Btn className={props.className}>
+        <Btn className={props.className} onClick={props.onClick}>
             {props.children}
         </Btn>
     )
