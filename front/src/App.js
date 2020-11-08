@@ -1,8 +1,13 @@
+import React, { useEffect, useRef, useState } from 'react'
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom"
 import styled from 'styled-components'
+import io, { Socket } from 'socket.io-client'
+
+import SocketContext from './variables/socketContext'
 
 import Home from './components/Home'
 import CreateRoom from './components/CreateRoom'
+import Room from './components/Room'
 import RoomBrowser from './components/RoomBrowser'
 import Submit from './components/Submit'
 
@@ -30,28 +35,59 @@ const Title = styled.div`
 Title.displayName = "Title.div"
 
 function App() {
+    const [socket, setSocket] = useState()
+    const [connected, setConnected] = useState(false)
+
+    useEffect(() => {
+        const s = io('http://localhost:3001')
+        s.on("connect", () => {
+            setSocket(s)
+            setConnected(true)
+        })
+
+        s.on("disconnect", () => setConnected(false))
+
+        return () => {
+            setConnected(false)
+            s.disconnect()
+        }
+    }, [])
+
     return (
         <Router>
             <AppContainer>
                 <Title>
                     Guess It!
                 </Title>
-                <Switch>
-                    <Route path="/" exact>
-                        <Home />
-                    </Route>
-                    <Route path="/create">
-                        <CreateRoom />
-                    </Route>
+                {(() => {
+                    if (!connected) {
+                        return "Connecting ..."
+                    } else {
+                        return (
+                            <SocketContext.Provider value={socket}>
+                                <Switch>
+                                    <Route path="/" exact>
+                                        <Home />
+                                    </Route>
+                                    <Route path="/create" exact>
+                                        <CreateRoom />
+                                    </Route>
 
-                    <Route path="/rooms">
-                        <RoomBrowser />
-                    </Route>
+                                    <Route path="/rooms" exact>
+                                        <RoomBrowser />
+                                    </Route>
 
-                    <Route path="/submit">
-                        <Submit />
-                    </Route>
-                </Switch>
+                                    <Route path="/submit" exact>
+                                        <Submit />
+                                    </Route>
+                                    <Route path="/room/:roomID" exact>
+                                        <Room />
+                                    </Route>
+                                </Switch>
+                            </SocketContext.Provider>
+                        )
+                    }
+                })()}
             </AppContainer>
         </Router>
     )

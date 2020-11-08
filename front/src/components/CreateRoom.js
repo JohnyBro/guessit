@@ -1,8 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import colors from '../variables/colors'
 import Button from '../components/Button'
-import io from 'socket.io-client'
+
+import socketContext from '../variables/socketContext'
+
 import { useHistory } from "react-router-dom";
 
 const FormContainer = styled.div`
@@ -24,23 +26,24 @@ const Input = styled.input`
 `
 
 function CreateRoom() {
+    let socket = useContext(socketContext)
     let history = useHistory();
-    const [socket, setSocket] = useState()
-    const roomNameInput = useRef()
+    let roomNameInput = useRef()
+    let pseudoInput = useRef()
+    let [errorMessage, setErrorMessage] = useState("")
 
     useEffect(() => {
-        const s = io('http://localhost:3001')
-
-        s.on('roomCode', roomCode => {
-            history.push(`/rooms/${roomCode}`)
+        socket.on('roomCode', (roomCode) => {
+            history.push(`/room/${roomCode}`)
         })
-
-        setSocket(s)
-
-        return () => s.disconnect()
     }, [])
 
     function createClick() {
+        if (!roomNameInput.current.value) {
+            setErrorMessage("Please enter a room name")
+            return
+        }
+
         socket.emit('createRoom', roomNameInput.current.value)
     }
 
@@ -49,9 +52,11 @@ function CreateRoom() {
             <Title>
                 Create Room
             </Title>
+            {errorMessage}
             <FormContainer>
                 <div>Room's name</div>
                 <Input ref={roomNameInput} />
+
                 <Button onClick={createClick}>Create Room</Button>
             </FormContainer>
         </>
