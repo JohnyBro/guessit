@@ -29,13 +29,17 @@ function CreateRoom() {
     let socket = useContext(socketContext)
     let history = useHistory();
     let roomNameInput = useRef()
-    let pseudoInput = useRef()
     let [errorMessage, setErrorMessage] = useState("")
 
     useEffect(() => {
-        socket.on('roomCode', (roomCode) => {
+        const onRoomCode = (roomCode) => {
             history.push(`/room/${roomCode}`)
-        })
+        }
+        socket.once('roomCode', onRoomCode)
+
+        return () => {
+            socket.off('roomCode', onRoomCode)
+        }
     }, [])
 
     function createClick() {
@@ -43,7 +47,7 @@ function CreateRoom() {
             setErrorMessage("Please enter a room name")
             return
         }
-
+        console.log('creating room');
         socket.emit('createRoom', roomNameInput.current.value)
     }
 

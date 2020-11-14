@@ -1,7 +1,5 @@
 import styled from 'styled-components'
-import { Link } from "react-router-dom";
-
-import colors from '../variables/colors'
+import { Link } from "react-router-dom"
 
 import Btn from './Button'
 
