@@ -1,14 +1,15 @@
 const io = require('./socketio')
 const { customAlphabet, urlAlphabet } = require('nanoid')
 const roomCode = customAlphabet(urlAlphabet, 5)
+const Room = require('./room')
 
-let rooms = []
+let gameRooms = {}
 
 function createRoom(socket, roomName) {
-
     const roomID = roomCode()
-    if (!rooms[roomID]) {
-        rooms[roomID] = { name: roomName, players: {} }
+
+    if (!gameRooms[roomID]) {
+        gameRooms[roomID] = new Room(roomID, roomName)
         socket.emit("roomCode", roomID)
     } else {
         console.log(`room id ${roomID} already taken`);
@@ -19,45 +20,45 @@ function createRoom(socket, roomName) {
 async function joinRoom(socket, roomID, pseudo) {
     console.log(`${socket.id} is joining room ${roomID} as ${pseudo}`)
 
-    if (!rooms[roomID]) {
+    if (!gameRooms[roomID]) {
         socket.emit("noRoom", "This room doesn't exist")
         return
     }
 
-    if (rooms[roomID].players[socket.id]) {
-        socket.emit("roomJoined", rooms[roomID])
-        return
-    }
+    let gameRoom = gameRooms[roomID]
 
-    rooms[roomID].players[socket.id] = { pseudo: pseudo }
-    await socket.join(roomID)
+    gameRoom.join(socket, pseudo)
 
-    socket.on('disconnect', async () => {
+    socket.once('disconnect', async () => {
         await leaveRoom(socket, roomID)
-        socket.to(roomID).emit('roomUpdate', rooms[roomID])
+        socket.to(roomID).emit('roomUpdate', gameRoom.infos)
     })
-    console.log(rooms);
-    socket.emit("roomJoined", rooms[roomID])
-    socket.to(roomID).emit('roomUpdate', rooms[roomID])
 }
 
 async function leaveRoom(socket, roomID) {
-    if (!rooms[roomID] || !rooms[roomID].players[socket.id]) {
+    //If the room doesn't exists
+    if (!gameRooms[roomID]) {
         return
     }
 
-    console.log('leaving room')
+    let gameRoom = gameRooms[roomID]
 
-    await socket.leave(roomID)
+    console.log(`${socket.id} is leaving room ${roomID}`)
+    await gameRoom.leave(socket)
 
-    delete rooms[roomID].players[socket.id]
-
-    if (Object.keys(rooms[roomID].players).length <= 0) {
+    if (gameRoom.playerCount <= 0) {
         console.log('room empty, deleting');
-        delete rooms[roomID]
+        delete gameRooms[roomID]
     }
+}
+
+async function startGame(socket, roomID){
+    if (!gameRooms[roomID]) return
+
+    gameRooms[roomID].startGame(socket)
 }
 
 module.exports.createRoom = createRoom
 module.exports.joinRoom = joinRoom
 module.exports.leaveRoom = leaveRoom
+module.exports.startGame = startGame

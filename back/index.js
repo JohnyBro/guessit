@@ -14,4 +14,8 @@ io.on('connect', socket => {
     socket.on('leaveRoom', roomID => {
         roomsManager.leaveRoom(socket, roomID)
     })
+
+    socket.on('startGame', roomID => {
+        roomsManager.startGame(socket, roomID)
+    })
 })

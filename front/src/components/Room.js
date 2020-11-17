@@ -5,6 +5,7 @@ import colors from '../variables/colors'
 import Button from '../components/Button'
 
 import socketContext from '../variables/socketContext'
+import { on } from 'jimp';
 
 const FormContainer = styled.div`
     display: grid;
@@ -22,10 +23,11 @@ const Input = styled.input`
 function Room() {
     let socket = useContext(socketContext)
     let { roomID } = useParams()
+    let pseudoInput = useRef()
     let [connected, setConnected] = useState(false)
     let [roomInfos, setRoomInfos] = useState(null)
-    let pseudoInput = useRef()
     let [errorMessage, setErrorMessage] = useState(null)
+    let [imageData, setImageData] = useState(null)
 
     useEffect(() => {
         let onRoomJoin = (room) => {
@@ -36,14 +38,20 @@ function Room() {
             setErrorMessage(errorMsg)
         }
         let onRoomUpdate = (room) => setRoomInfos(room)
+        let onImg = (img) => {
+            console.log("recu");
+            setImageData(img)
+        }
         socket.on('roomJoined', onRoomJoin)
         socket.on('noRoom', onNoRoom)
         socket.on('roomUpdate', onRoomUpdate)
+        socket.on('img', onImg)
 
         return () => {
             socket.off('roomJoined', onRoomJoin)
             socket.off('noRoom', onNoRoom)
             socket.off('roomUpdate', onRoomUpdate)
+            socket.off('img', onImg)
 
             socket.emit('leaveRoom', roomID)
         }
@@ -56,6 +64,10 @@ function Room() {
         }
 
         socket.emit('joinRoom', roomID, pseudoInput.current.value)
+    }
+
+    let startGame = () => {
+        socket.emit('startGame', roomID)
     }
 
     if (!connected) {
@@ -71,11 +83,12 @@ function Room() {
             </>
         )
     } else {
-        console.log(roomInfos.players);
         return (
             <>
+                {imageData && <img style={{maxWidth: '100%'}} src={imageData}/>}
                 <p>Room name : {roomInfos.name}</p>
-                <p>Players: {Object.keys(roomInfos.players).map((key, index) => <span key={index}>{roomInfos.players[key].pseudo}<br /></span>)}</p>
+                <p>Players: {roomInfos.players.map((player, index) => <span key={index}>{player}<br /></span>)}</p>
+                <Button onClick={startGame}>Start</Button>
             </>
         )
     }

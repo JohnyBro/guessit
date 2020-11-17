@@ -1,5 +1,9 @@
-function GameRoom() {
+let jimp = require("jimp")
 
+class GuessGame {
+    constructor(room){
+        
+    }
 }
 
-export default GameRoom
+module.exports = GuessGame
