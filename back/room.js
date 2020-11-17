@@ -35,7 +35,7 @@ class Room {
 
     async startGame(){
         if(this.started == true) return
-
+        this.started = true
         let fileNames = fs.readdirSync('./img/')
         let rand = this.randomIntFromInterval(0, fileNames.length - 1)
 
