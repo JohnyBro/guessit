@@ -2,10 +2,9 @@ import React, { useContext, useEffect, useState, useRef } from 'react'
 import { useParams } from "react-router-dom";
 import styled from 'styled-components'
 import colors from '../variables/colors'
-import Button from '../components/Button'
+import Button from '../components/button'
 
 import socketContext from '../variables/socketContext'
-import { on } from 'jimp';
 
 const FormContainer = styled.div`
     display: grid;
@@ -39,7 +38,6 @@ function Room() {
         }
         let onRoomUpdate = (room) => setRoomInfos(room)
         let onImg = (img) => {
-            console.log("recu");
             setImageData(img)
         }
         socket.on('roomJoined', onRoomJoin)

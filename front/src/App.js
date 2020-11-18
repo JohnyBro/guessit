@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom"
+import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom"
 import styled from 'styled-components'
 import io from 'socket.io-client'
 
@@ -39,7 +39,7 @@ function App() {
     const [connected, setConnected] = useState(false)
 
     useEffect(() => {
-        const s = io('http://localhost:3001')
+        const s = io('http://185.98.128.126:3001')
         s.on("connect", () => {
             setSocket(s)
             setConnected(true)
@@ -56,9 +56,9 @@ function App() {
     return (
         <Router>
             <AppContainer>
-                <Title>
-                    Guess It!
-                </Title>
+                <Link to="/">
+                    <Title>Guess It!</Title>
+                </Link>
                 {(() => {
                     if (!connected) {
                         return "Connecting ..."
