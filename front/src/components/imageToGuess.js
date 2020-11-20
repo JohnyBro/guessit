@@ -25,7 +25,7 @@ function ImageToGuess(props){
 
         return () => {
             socket.off('image', onImage)
-            socket.off('pixelize', onPixelize)
+            socket.off('pixelize', onPixelize)//
         }
     }, [])
 
