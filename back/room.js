@@ -42,50 +42,34 @@ class Room {
     async startGame(){
         if(this.started == true) return
         this.started = true
+
+        this.sockets.forEach(s => s.ready = false)
         
         let fileNames = fs.readdirSync('./img/')
         let rand = this.randomIntFromInterval(0, fileNames.length - 1)
-        let beforeRead = process.hrtime()
+        
+        console.log("reading new image");
         jimp.read("./img/" + fileNames[rand], (err, img) => {
             if(err) return console.log(err)
 
-            let afterRead = process.hrtime(beforeRead)
-            console.log(`Temps de lecture de l'image : %dms`, afterRead[1] / 1000000);
-            let beforeScale = process.hrtime()
-
-            img.scaleToFit(1500, 1000, () => {
-
-                let afterScale = process.hrtime(beforeScale)
-                console.log(`Temps pour redimensionner l'image : %dms`, afterScale[1] / 1000000);
-
-                this.currentImage = img
-                this.pixelSize = this.currentImage.bitmap.width / 40
+            console.log("finished reading image");
+            img.scaleToFit(1500, 1000, async () => {
+                console.log("finished scaling down image");
+                this.pixelSize = img.bitmap.width / 40
                 this.pixelStep = this.pixelSize / 20
-                this.pixelize()
-                this.pixelizeTimer = setInterval(this.pixelize.bind(this), 2000);
+                io.to(this.id).emit('image', await img.getBufferAsync(jimp.AUTO))
             })
         })
-        
+    }
+
+    startLoop(){
+        this.pixelize()
+        this.pixelizeTimer = setInterval(this.pixelize.bind(this), 1000);
     }
 
     async pixelize(){
-        let baseImage = this.currentImage.clone()
-        let imageData 
-
-        let beforePixelize = process.hrtime()
-
         if(this.pixelSize < this.pixelStep){
-            imageData = await baseImage.getBase64Async(jimp.AUTO)
-        }else{
-            imageData = await baseImage.pixelate(this.pixelSize <= this.pixelStep ? 1 : this.pixelSize).getBase64Async(jimp.AUTO)
-        }
-
-        let afterPixelize = process.hrtime(beforePixelize)
-        console.log(`Temps pour pixeliser l'image : %dms`, afterPixelize[1] / 1000000);
-        
-        io.to(this.id).emit('img', imageData)
-
-        if(this.pixelSize < this.pixelStep){
+            io.to(this.id).emit('pixelize', 1)
             clearInterval(this.pixelizeTimer)
             this.pixelizeTimer = null
             this.started = false
@@ -93,11 +77,23 @@ class Room {
             return
         }
 
+        io.to(this.id).emit('pixelize', this.pixelSize)
+
         this.pixelSize -= this.pixelStep
     }
 
     randomIntFromInterval(min,max){
         return Math.floor(Math.random()*(max-min+1)+min);
+    }
+
+    imageReady(socket){
+        console.log("ready");
+        const socketID = this.sockets.findIndex(s => s.id = socket.id)
+        this.sockets[socketID].ready = true
+
+        if(!this.sockets.find(s => s.ready != true)){
+            this.startLoop()
+        }
     }
 
     get infos() {

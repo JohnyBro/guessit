@@ -1,10 +1,11 @@
 import React, { useContext, useEffect, useState, useRef } from 'react'
 import { useParams } from "react-router-dom";
 import styled from 'styled-components'
+
 import colors from '../variables/colors'
 import Button from '../components/button'
-
 import socketContext from '../variables/socketContext'
+import ImageToGuess from './imageToGuess'
 
 const FormContainer = styled.div`
     display: grid;
@@ -83,6 +84,7 @@ function Room() {
     } else {
         return (
             <>
+                <ImageToGuess roomID={roomID} />
                 {imageData && <img style={{maxWidth: '100%'}} src={imageData}/>}
                 <p>Room name : {roomInfos.name}</p>
                 <p>Players: {roomInfos.players.map((player, index) => <span key={index}>{player}<br /></span>)}</p>
