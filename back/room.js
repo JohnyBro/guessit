@@ -63,6 +63,7 @@ class Room {
     }
 
     startLoop(){
+        console.log("starting loop")
         this.pixelize()
         this.pixelizeTimer = setInterval(this.pixelize.bind(this), 1000);
     }
@@ -70,6 +71,7 @@ class Room {
     async pixelize(){
         if(this.pixelSize < this.pixelStep){
             io.to(this.id).emit('pixelize', 1)
+            console.log("stoping loop")
             clearInterval(this.pixelizeTimer)
             this.pixelizeTimer = null
             this.started = false
