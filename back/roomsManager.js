@@ -31,8 +31,9 @@ async function joinRoom(socket, roomID, pseudo) {
 
     socket.once('disconnect', async () => {
         await leaveRoom(socket, roomID)
-        socket.to(roomID).emit('roomUpdate', gameRoom.infos)
     })
+
+    //console.log(gameRooms);
 }
 
 async function leaveRoom(socket, roomID) {
@@ -50,6 +51,8 @@ async function leaveRoom(socket, roomID) {
         console.log('room empty, deleting');
         delete gameRooms[roomID]
     }
+
+    //console.log(gameRooms);
 }
 
 async function startGame(socket, roomID){
@@ -58,14 +61,7 @@ async function startGame(socket, roomID){
     gameRooms[roomID].startGame(socket)
 }
 
-async function imageReady(socket, roomID){
-    if (!gameRooms[roomID]) return
-
-    gameRooms[roomID].imageReady(socket)
-}
-
 module.exports.createRoom = createRoom
 module.exports.joinRoom = joinRoom
 module.exports.leaveRoom = leaveRoom
 module.exports.startGame = startGame
-module.exports.imageReady = imageReady

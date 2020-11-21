@@ -34,7 +34,6 @@ function ImageToGuess(props){
         if(baseImage){
             socket.removeAllListeners('pixelize')
             socket.on('pixelize', onPixelize)
-            socket.emit('imageReady', props.roomID)
         }
     }, [baseImage])
 

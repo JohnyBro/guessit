@@ -8,7 +8,6 @@ class Room {
         this.name = name
         this.sockets = []
         this.started = false
-        this.pixelSize = 0.1
     }
 
     async join(socket, pseudo) {
@@ -22,13 +21,18 @@ class Room {
         let roomInfos = this.infos
         socket.emit("roomJoined", roomInfos)
         socket.to(this.id).emit('roomUpdate', roomInfos)
+        if(this.started && this.currentImage){
+            socket.emit('image', await this.currentImage.getBufferAsync(jimp.AUTO))
+        }
     }
 
     async leave(socket) {
         if (!this.sockets.find(s => s.id == socket.id)) return
 
         await socket.leave(this.id)
-        this.sockets = this.sockets.filter(s => s.id != socket.id)
+
+        let socketIndex = this.sockets.findIndex(s => s.id == socket.id)
+        this.sockets.splice(socketIndex, 1)
 
         if(this.playerCount <= 0 && this.pixelizeTimer){
             clearInterval(this.pixelizeTimer)
@@ -52,19 +56,23 @@ class Room {
         jimp.read("./img/" + fileNames[rand], (err, img) => {
             if(err) return console.log(err)
 
+            this.currentImage = img
+
             console.log("finished reading image");
             img.scaleToFit(1500, 1000, async () => {
                 console.log("finished scaling down image");
+
                 this.pixelSize = img.bitmap.width / 40
                 this.pixelStep = this.pixelSize / 20
+
                 io.to(this.id).emit('image', await img.getBufferAsync(jimp.AUTO))
+                this.startLoop()
             })
         })
     }
 
     startLoop(){
         console.log("starting loop")
-        this.pixelize()
         this.pixelizeTimer = setInterval(this.pixelize.bind(this), 1000);
     }
 
@@ -85,16 +93,6 @@ class Room {
 
     randomIntFromInterval(min,max){
         return Math.floor(Math.random()*(max-min+1)+min);
-    }
-
-    imageReady(socket){
-        console.log("ready");
-        const socketID = this.sockets.findIndex(s => s.id = socket.id)
-        this.sockets[socketID].ready = true
-
-        if(!this.sockets.find(s => s.ready != true)){
-            this.startLoop()
-        }
     }
 
     get infos() {

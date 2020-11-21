@@ -1,6 +1,8 @@
 const { io } = require('./socketio')
 const roomsManager = require("./roomsManager")
 
+console.log(process.env.UV_THREADPOOL_SIZE)
+
 io.on('connect', socket => {
 
     socket.on('createRoom', (roomName) => {
@@ -17,9 +19,5 @@ io.on('connect', socket => {
 
     socket.on('startGame', roomID => {
         roomsManager.startGame(socket, roomID)
-    })
-
-    socket.on('imageReady', roomID => {
-        roomsManager.imageReady(socket, roomID)
     })
 })
