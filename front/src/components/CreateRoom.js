@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import colors from '../variables/colors'
-import Button from '../components/button'
+import Button from '../components/Button'
 
 import socketContext from '../variables/socketContext'
 

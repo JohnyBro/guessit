@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 import { Link } from "react-router-dom"
 
-import Btn from './button'
+import Btn from './Button'
 
 const HomeButton = styled(Btn)`
     margin-top: 10px;

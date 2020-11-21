@@ -12,6 +12,7 @@ import RoomBrowser from './components/RoomBrowser'
 import Submit from './components/Submit'
 
 import colors from './variables/colors'
+import config from './variables/config'
 
 const AppContainer = styled.div`
     width: 100%;
@@ -39,7 +40,7 @@ function App() {
     const [connected, setConnected] = useState(false)
 
     useEffect(() => {
-        const s = io('http://185.98.128.126:3001')
+        const s = io(`http://${config.socketHost}:${config.socketPort}`)
         s.on("connect", () => {
             setSocket(s)
             setConnected(true)

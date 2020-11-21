@@ -1,37 +1,38 @@
-import react, { useEffect, useState, useContext } from 'react'
-import { useStateWithCallbackLazy } from 'use-state-with-callback'
-import styled from 'styled-components'
-import jimp from 'jimp'
+import react, { useEffect, useState, useContext, useRef } from 'react'
 import socketContext from '../variables/socketContext'
-
+import PixelizeWorker from '../workers/pixelize.worker'
 
 function ImageToGuess(props){
     let socket = useContext(socketContext)
     let [baseImage, setBaseImage] = useState(null)
     let [pixelImage, setPixelImage] = useState(null)
+    let pixelizeWorker = useRef(null)
 
     let onImage = data => setBaseImage(data)
 
     let onPixelize = async pixelSize => {
-        console.log(pixelSize)
-        let jimg = await jimp.read(baseImage)
-        jimg.pixelate(pixelSize)
-        let pixelImage = await jimg.getBase64Async(jimp.AUTO)
-        setPixelImage(pixelImage)
+        pixelizeWorker.current.postMessage([baseImage, pixelSize])
+        // let jimg = await jimp.read(baseImage)
+        // pixelSize != 1 && jimg.pixelate(pixelSize)
+        // let pixelImage = await jimg.getBase64Async(jimp.AUTO)
+        // setPixelImage(pixelImage)
     }
 
     useEffect(() => {
         socket.on('image', onImage)
 
+        pixelizeWorker.current = new PixelizeWorker({type: "module"});
+        pixelizeWorker.current.onmessage = e => setPixelImage(e.data)
+
         return () => {
             socket.off('image', onImage)
-            socket.off('pixelize', onPixelize)//
+            socket.removeAllListeners('pixelize')
         }
     }, [])
 
     useEffect(() => {
         if(baseImage){
-            socket.off('pixelize', onPixelize)
+            socket.removeAllListeners('pixelize')
             socket.on('pixelize', onPixelize)
             socket.emit('imageReady', props.roomID)
         }

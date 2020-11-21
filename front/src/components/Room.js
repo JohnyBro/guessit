@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import styled from 'styled-components'
 
 import colors from '../variables/colors'
-import Button from '../components/button'
+import Button from '../components/Button'
 import socketContext from '../variables/socketContext'
 import ImageToGuess from './imageToGuess'
 

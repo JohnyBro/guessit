@@ -76,7 +76,6 @@ class Room {
             setTimeout(() => this.startGame(), 5000)
             return
         }
-
         io.to(this.id).emit('pixelize', this.pixelSize)
 
         this.pixelSize -= this.pixelStep
