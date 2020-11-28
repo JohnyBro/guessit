@@ -1,6 +1,12 @@
 import react, { useEffect, useState, useContext, useRef } from 'react'
 import socketContext from '../variables/socketContext'
 import PixelizeWorker from '../workers/pixelize.worker'
+import styled from 'styled-components'
+
+const Image = styled.img`
+    max-width: 80vw;
+    max-height: 80vh;
+`
 
 function ImageToGuess(props){
     let socket = useContext(socketContext)
@@ -38,7 +44,7 @@ function ImageToGuess(props){
     }, [baseImage])
 
     return (
-        <img style={{maxWidth: "100%"}} src={pixelImage} />
+        <Image src={pixelImage} />
     )
 }
 

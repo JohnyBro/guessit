@@ -1,7 +1,12 @@
 const { io } = require('./socketio')
 const roomsManager = require("./roomsManager")
+const db = require("./mongoose")
+const submitManager = require('./submitManager')
 
-console.log(process.env.UV_THREADPOOL_SIZE)
+db.on('error', console.error.bind(console, 'connection error:'))
+db.once('open', function() {
+    console.log("Database connected")
+})
 
 io.on('connect', socket => {
 
@@ -19,5 +24,10 @@ io.on('connect', socket => {
 
     socket.on('startGame', roomID => {
         roomsManager.startGame(socket, roomID)
+    })
+
+    socket.on('submitImage', (data, cb) => {
+        cb("OK")
+        submitManager.submit(data)
     })
 })
