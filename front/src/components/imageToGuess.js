@@ -1,50 +1,28 @@
-import react, { useEffect, useState, useContext, useRef } from 'react'
+import { useEffect, useState, useContext } from 'react'
 import socketContext from '../variables/socketContext'
-import PixelizeWorker from '../workers/pixelize.worker'
 import styled from 'styled-components'
 
 const Image = styled.img`
-    max-width: 80vw;
-    max-height: 80vh;
+    max-width:100%;
+    max-height:100%;
 `
 
 function ImageToGuess(props){
     let socket = useContext(socketContext)
-    let [baseImage, setBaseImage] = useState(null)
-    let [pixelImage, setPixelImage] = useState(null)
-    let pixelizeWorker = useRef(null)
+    let [image, setImage] = useState(null)
 
-    let onImage = data => setBaseImage(data)
-
-    let onPixelize = async pixelSize => {
-        pixelizeWorker.current.postMessage([baseImage, pixelSize])
-        // let jimg = await jimp.read(baseImage)
-        // pixelSize != 1 && jimg.pixelate(pixelSize)
-        // let pixelImage = await jimg.getBase64Async(jimp.AUTO)
-        // setPixelImage(pixelImage)
-    }
+    let onImage = data => setImage(data)
 
     useEffect(() => {
         socket.on('image', onImage)
 
-        pixelizeWorker.current = new PixelizeWorker({type: "module"});
-        pixelizeWorker.current.onmessage = e => setPixelImage(e.data)
-
         return () => {
             socket.off('image', onImage)
-            socket.removeAllListeners('pixelize')
         }
     }, [])
 
-    useEffect(() => {
-        if(baseImage){
-            socket.removeAllListeners('pixelize')
-            socket.on('pixelize', onPixelize)
-        }
-    }, [baseImage])
-
     return (
-        <Image src={pixelImage} />
+        <Image src={image} />
     )
 }
 

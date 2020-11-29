@@ -1,13 +1,8 @@
 const { parentPort, workerData } = require("worker_threads");
 const jimp = require('jimp')
 
-parentPort.on("message", datas => {
-    let promiseArray = []
-    datas.forEach(data => {
-        promiseArray.push(getProcessedImage(data))
-    });
-    
-    Promise.all(promiseArray).then(result => parentPort.postMessage(result))
+parentPort.on("message", data => {
+    getProcessedImage(data).then(result => parentPort.postMessage(result))
 })
 
 async function getProcessedImage(imageData){

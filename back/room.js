@@ -1,6 +1,5 @@
 const { io } = require('./socketio')
-const jimp = require("jimp")
-const fs = require("fs")
+const ImageModel = require('./models/imageModel')
 
 class Room {
     constructor(roomID, name) {
@@ -8,6 +7,7 @@ class Room {
         this.name = name
         this.sockets = []
         this.started = false
+        this.imageData = null
     }
 
     async join(socket, pseudo) {
@@ -34,74 +34,78 @@ class Room {
         let socketIndex = this.sockets.findIndex(s => s.id == socket.id)
         this.sockets.splice(socketIndex, 1)
 
-        if(this.playerCount <= 0 && this.pixelizeTimer){
-            clearInterval(this.pixelizeTimer)
-            this.pixelizeTimer = null
-            return
+        if(this.playerCount > 0){
+            io.to(this.id).emit('roomUpdate', this.infos)
         }
-
-        io.to(this.id).emit('roomUpdate', this.infos)
     }
 
-    async startGame(){
-        if(this.started == true) return
+    async startGame(socket){
+        //If the socket isn't the host of the room or the romm already started
+        if(this.sockets[0].id != socket.id || this.started == true) return
         this.started = true
+        await this.setNextImageData()
+        this.startLoop()
+    }
 
-        this.sockets.forEach(s => s.ready = false)
-        
-        let fileNames = fs.readdirSync('./img/')
-        let rand = this.randomIntFromInterval(0, fileNames.length - 1)
-        
-        console.log("reading new image");
-        jimp.read("./img/" + fileNames[rand], (err, img) => {
-            if(err) return console.log(err)
+    async setNextImageData(){
+        if(!this.started) return
+        this.sockets.forEach((s, i, a) => a[i].guessed = false)
+        io.to(this.id).emit('roomUpdate', this.infos)
 
-            this.currentImage = img
-
-            console.log("finished reading image");
-            img.scaleToFit(1500, 1000, async () => {
-                console.log("finished scaling down image");
-
-                this.pixelSize = img.bitmap.width / 40
-                this.pixelStep = this.pixelSize / 20
-
-                io.to(this.id).emit('image', await img.getBufferAsync(jimp.AUTO))
-                this.startLoop()
-            })
-        })
+        console.log("Getting next image to guesse")
+        let count = await ImageModel.estimatedDocumentCount().exec()
+        let random = Math.floor(Math.random() * count)
+        this.imageData = await ImageModel.findOne().skip(random).exec()
+        this.imageIndex = 0
+        this.startLoop()
     }
 
     startLoop(){
-        console.log("starting loop")
-        this.pixelizeTimer = setInterval(this.pixelize.bind(this), 1000);
+        clearInterval(this.loopTimer)
+        this.loopTimer = setInterval(async () => {
+            //Out of pixelImages array
+            if(!this.imageData.pixelImages[this.imageIndex]){
+                clearInterval(this.loopTimer)
+
+                setTimeout(async () => {
+                    this.setNextImageData.call(this)
+                }, 5000)
+                return
+            }
+
+            io.to(this.id).emit('image', this.imageData.pixelImages[this.imageIndex])
+            this.imageIndex++
+        }, 1000)
     }
 
-    async pixelize(){
-        if(this.pixelSize < this.pixelStep){
-            io.to(this.id).emit('pixelize', 1)
-            console.log("stoping loop")
-            clearInterval(this.pixelizeTimer)
-            this.pixelizeTimer = null
-            this.started = false
-            setTimeout(() => this.startGame(), 5000)
-            return
+    guess(socket, guess, cb){
+        if(guess == this.imageData.name){
+            let playerSocket = this.sockets.find(s => s.id == socket.id)
+            playerSocket.guessed = true
+            cb(true)
+            io.to(this.id).emit('roomUpdate', this.infos)
+        }else{
+            cb(false)
         }
-        io.to(this.id).emit('pixelize', this.pixelSize)
-
-        this.pixelSize -= this.pixelStep
     }
 
-    randomIntFromInterval(min,max){
-        return Math.floor(Math.random()*(max-min+1)+min);
+    clean(){
+        clearInterval(this.loopTimer)
+        this.started = false
     }
 
     get infos() {
-        let infos = {}
-        infos.name = this.name
-        infos.players = []
+        let infos = {
+            name: this.name,
+            started: this.started,
+            players: [],
+            host: this.sockets[0].id
+        }
+
         this.sockets.forEach(socket => {
-            infos.players.push(socket.pseudo)
-        });
+            infos.players.push({id: socket.id, pseudo: socket.pseudo, guessed: socket.guessed})
+        })
+
         return infos
     }
 

@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import colors from '../variables/colors'
 import Button from '../components/Button'
+import SiteTitle from './Title'
 
 import socketContext from '../variables/socketContext'
 
@@ -9,7 +10,7 @@ import { useHistory } from "react-router-dom";
 
 const FormContainer = styled.div`
     display: grid;
-    grid-template-columns: auto auto;
+    grid-template-columns: 1fr 1fr;
     column-gap: 10px;
 `
 
@@ -54,6 +55,8 @@ function CreateRoom() {
     return (
         <>
             <Title>
+                <SiteTitle/>
+                <br/>
                 Create Room
             </Title>
             {errorMessage}

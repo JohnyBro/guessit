@@ -26,6 +26,10 @@ io.on('connect', socket => {
         roomsManager.startGame(socket, roomID)
     })
 
+    socket.on('guess', (roomID, guess, cb) => {
+        roomsManager.guess(socket, roomID, guess, cb)
+    })
+
     socket.on('submitImage', (data, cb) => {
         cb("OK")
         submitManager.submit(data)

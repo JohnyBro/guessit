@@ -2,6 +2,7 @@ import react, { useRef, useState, useContext } from 'react'
 import styled from 'styled-components'
 import socketContext from '../variables/socketContext'
 
+import SiteTitle from './Title'
 import Button from './Button'
 
 const Title = styled.div`
@@ -11,10 +12,10 @@ const Title = styled.div`
 const SelectedImages = styled.div`
     display: grid;
     grid-template-columns: repeat( auto-fit, minmax(250px, 1fr) );
-    justify-content: stretch;
-    align-items: stretch;
+    justify-content: center;
+    align-items: end;
     gap: 20px;
-    padding: 0 20px;
+    padding: 20px;
 `
 
 const Image = styled.img`
@@ -68,13 +69,14 @@ function Submit() {
         }
 
         let dataToUpload = images.map((imageData, index) => {
-            let data = {buffer: imageData.buffer, name: inputs.current[index]}
+            let data = {buffer: imageData.buffer, name: inputs.current[index].toLowerCase()}
             return data
         })
 
         socket.emit("submitImage", dataToUpload, message => {
             if(message == "OK"){
                 setStatusMessage("Upload done")
+                setImages(null)
             }else{
                 setStatusMessage("Upload failed")
             }
@@ -95,12 +97,13 @@ function Submit() {
 
     return (
         <>
+            <SiteTitle/>
             {!images && <Title>The community can submit images</Title>}
-            {statusMessage}
             <input type="file" name="myImage" onChange={onFile} multiple accept="image/png, image/jpeg" autocomplete="off" />
             <SelectedImages>
                 {images && renderSelectedImages()}
             </SelectedImages>
+            {statusMessage}
             {images && <Button onClick={onSubmit} >Submit images</Button>}
         </>
     )

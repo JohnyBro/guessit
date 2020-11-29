@@ -8,6 +8,7 @@ let gameRooms = {}
 function createRoom(socket, roomName) {
     const roomID = roomCode()
 
+    //If the room with this id doesn't exist
     if (!gameRooms[roomID]) {
         gameRooms[roomID] = new Room(roomID, roomName)
         socket.emit("roomCode", roomID)
@@ -18,22 +19,21 @@ function createRoom(socket, roomName) {
 }
 
 async function joinRoom(socket, roomID, pseudo) {
-    console.log(`${socket.id} is joining room ${roomID} as ${pseudo}`)
-
+    //If the room doesn't exists
     if (!gameRooms[roomID]) {
         socket.emit("noRoom", "This room doesn't exist")
         return
     }
-
+    //Get the room
     let gameRoom = gameRooms[roomID]
 
+    //Make the socket join the room
     gameRoom.join(socket, pseudo)
 
+    //If the socket leave without using the "leaveRoom" event
     socket.once('disconnect', async () => {
-        await leaveRoom(socket, roomID)
+        leaveRoom(socket, roomID)
     })
-
-    //console.log(gameRooms);
 }
 
 async function leaveRoom(socket, roomID) {
@@ -42,17 +42,16 @@ async function leaveRoom(socket, roomID) {
         return
     }
 
+    //Get the room
     let gameRoom = gameRooms[roomID]
 
-    console.log(`${socket.id} is leaving room ${roomID}`)
     await gameRoom.leave(socket)
 
     if (gameRoom.playerCount <= 0) {
         console.log('room empty, deleting');
+        gameRooms[roomID].clean()
         delete gameRooms[roomID]
     }
-
-    //console.log(gameRooms);
 }
 
 async function startGame(socket, roomID){
@@ -61,7 +60,14 @@ async function startGame(socket, roomID){
     gameRooms[roomID].startGame(socket)
 }
 
+async function guess(socket, roomID, guess, cb){
+    if (!gameRooms[roomID]) return
+
+    gameRooms[roomID].guess(socket, guess, cb)
+}
+
 module.exports.createRoom = createRoom
 module.exports.joinRoom = joinRoom
 module.exports.leaveRoom = leaveRoom
 module.exports.startGame = startGame
+module.exports.guess = guess

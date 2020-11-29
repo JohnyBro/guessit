@@ -1,7 +1,13 @@
-
+import SiteTitle from './Title'
 
 function RoomBrowser() {
-    return null
+    return (
+        <>
+            <SiteTitle/>
+            <br/>
+            Comming soon
+        </>
+    )
 }
 
 export default RoomBrowser

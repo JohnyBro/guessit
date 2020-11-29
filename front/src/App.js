@@ -15,25 +15,12 @@ import colors from './variables/colors'
 import config from './variables/config'
 
 const AppContainer = styled.div`
-    width: 100%;
-    min-height: 100%;
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: center;
-    align-items: center;
+    height: 100%;
+    text-align: center;
     background-color: ${colors.primary[0]};
     color: white;
     overflow-y: auto;
 `
-
-const Title = styled.div`
-    width: 100%;
-    text-align: center;
-    font-weight: 500;
-    font-size: 4rem;
-    margin-bottom: 30px;
-`
-Title.displayName = "Title.div"
 
 function App() {
     const [socket, setSocket] = useState()
@@ -57,9 +44,6 @@ function App() {
     return (
         <Router>
             <AppContainer>
-                <Link to="/">
-                    <Title>Guess It!</Title>
-                </Link>
                 {(() => {
                     if (!connected) {
                         return "Connecting ..."
